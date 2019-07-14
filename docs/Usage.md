@@ -1,5 +1,10 @@
 ## Getting started
 
+#### On the Islandora side:
+
+Install [DGI's Islandora REST](https://github.com/discoverygarden/islandora_rest) and in Drupal enable it and the "Islandora REST API Authentication" 
+module that comes with it.  Set a user API token (in your user profile page).  We tend to just generate a new one on any give project.
+
 ```bash
 $ pip install islandora7-rest
 ```
@@ -12,11 +17,14 @@ client = IslandoraClient("https://mysite/islandora/rest",
     token="auth_token")
 ```
 
-* we use *token* for the keyword because we're using the 
-islandora_rest_api_auth module (bundled with discoverygarden/islandora_rest).
+* we use *token* for the keyword because [normal passwords aren't the same thing](https://github.com/discoverygarden/islandora_rest#authorization),
+and our sites log in via single-sign-on anyway.
 
-Drupal in general doesn't handle [Basic Auth directly](https://github.com/discoverygarden/islandora_rest#authorization),
-and we're logging in via single-sign-on anyway.
+There is a handy configurator module which will look for passwords in environment variables or a .env file.
+
+```python
+from islandora7_rest import config   # sets config.ISLANDORA_REST from .env or the environment
+```
 
 ## Query from Solr
 
