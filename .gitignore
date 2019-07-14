@@ -1,0 +1,11 @@
+.idea
+.git
+.old
+*.pyc
+*.env
+env
+build/
+dist/
+*.egg-info/
+Pipfile
+Pipfile.lock
