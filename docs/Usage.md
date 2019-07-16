@@ -36,7 +36,7 @@ solr_generator is an Iterator that yields items from a Solr query
 (this is memory-friendly, you may be iterating over thousands of items).
 
 By default, only PID is retrieved.  You can pass an ```fl=``` argument with a comma-separated
-list of fields.
+list of fields. Most parameters here eventually make their way down to the Solr GET request.
 
 Results are in a Python dictionary reflecting the Solr document
 
@@ -48,7 +48,7 @@ for item in client.solr_generator("PID:* AND fedora_datastreams_ms:JPG", fl="PID
 ### solr_query
 
 The more low-level Solr query, useful if you want facet info or counts.
-Most Solr GET fields eventually make their way down to the Solr GET request.
+Again, most parameters here eventually make their way down to the Solr GET request.
 
 Returns a raw Response from Requests.
 
@@ -57,7 +57,7 @@ result = client.solr_query("*:*", rows=0)
 print(result['response']['numFound'])
 ```
 
-Facets are harder. Because the keyword argument needs an dot in the keyword, and also
+Facets are harder. Because the keyword argument needs an dot in the parameter, and also
 might be called more than once.
 
 Example --
