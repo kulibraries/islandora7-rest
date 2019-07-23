@@ -123,6 +123,8 @@ file_stream = client.get_datastream('islandora:21', 'OBJ', streaming=True)
 with open(output_filename, "wb") as fileHandle:
         for block in file_stream:
             fileHandle.write(block)
+        fileHandle.flush() # Not always needed... but sometimes if you are doing work
+                           # within the with: block... like using a tempfile.TemporaryFile.
 ```
 
 ### get_datastream_info
