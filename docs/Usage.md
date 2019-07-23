@@ -2,15 +2,14 @@
 
 #### On the Islandora side:
 
-Install [DGI's Islandora REST](https://github.com/discoverygarden/islandora_rest) and in Drupal enable it and the "Islandora REST API Authentication" 
-module that comes with it.  Set a user API token (in your user profile page).  We tend to just generate a new one on any give project.
+Install [DGI's Islandora REST](https://github.com/discoverygarden/islandora_rest) and, in Drupal, enable it and the "Islandora REST API Authentication" 
+module that comes with it.  Set a user API token (in your user profile page).  We tend to just generate a new one on any given project and not store it long term.
+
+### On the Python side
 
 ```bash
 $ pip install islandora7-rest
 ```
-
-### On the Python side
-
 
 ```python
 from islandora7_rest import IslandoraClient
@@ -20,13 +19,13 @@ client = IslandoraClient("https://mysite/islandora/rest",
     token="auth_token")
 ```
 
-* we use *token* for the keyword because [normal passwords aren't the same thing](https://github.com/discoverygarden/islandora_rest#authorization),
+* we use *token* for the keyword because [normal passwords don't work well with REST as implemented](https://github.com/discoverygarden/islandora_rest#authorization),
 and our sites log in via single-sign-on anyway.
 
-There is a handy configurator module which will look for passwords in environment variables or a .env file.
+There is an optional configurator module which will look for passwords in environment variables or a .env file.
 
 ```python
-from islandora7_rest import config   # sets config.ISLANDORA_REST from .env or the environment
+from islandora7_rest import config   # sets config.ISLANDORA_REST, etc from .env or the environment
 ```
 
 ## Query from Solr
@@ -34,11 +33,12 @@ from islandora7_rest import config   # sets config.ISLANDORA_REST from .env or t
 ### solr_generator
 
 solr_generator is an Iterator that yields items from a Solr query 
-(this is memory-friendly, if you're doing something to thousands of items).
+(this is memory-friendly, you may be iterating over thousands of items).
 
-By default, only PID is retrieved.
+By default, only PID is retrieved.  You can pass an ```fl=``` argument with a comma-separated
+list of fields. Most parameters here eventually make their way down to the Solr GET request.
 
-results are in a Python dictionary reflecting the Solr document
+Results are in a Python dictionary reflecting the Solr document
 
 ```python
 for item in client.solr_generator("PID:* AND fedora_datastreams_ms:JPG", fl="PID,fgs_label_s"):
@@ -48,6 +48,7 @@ for item in client.solr_generator("PID:* AND fedora_datastreams_ms:JPG", fl="PID
 ### solr_query
 
 The more low-level Solr query, useful if you want facet info or counts.
+Again, most parameters here eventually make their way down to the Solr GET request.
 
 Returns a raw Response from Requests.
 
@@ -56,15 +57,16 @@ result = client.solr_query("*:*", rows=0)
 print(result['response']['numFound'])
 ```
 
-Facets are harder. Partially because the keyword argument needs an invalid dot.
+Facets are harder. Because the keyword argument needs an dot in the parameter, and also
+might be called more than once.
 
-Advanced example --
+Example --
 ```python
 arguments = {
     "facet": "true",
     "facet.field": ["fedora_datastreams_ms", "RELS_EXT_hasModel_uri_ms"]
 }
-result = client.solr_query("*:*", rows=2, **arguments)
+result = client.solr_query("*:*", rows=0, **arguments)
 for dsid, count in result['facet_counts']['facet_fields']['fedora_datastreams_ms'].items():
     print(dsid, count)
 ```
@@ -72,7 +74,9 @@ for dsid, count in result['facet_counts']['facet_fields']['fedora_datastreams_ms
 
 ## Objects
 
-### get_object
+### get_object 
+
+Get's object info as a Python dictionary structure.
 
 ```python
 object_info = client.get_object("islandora:21")
@@ -111,9 +115,9 @@ client.delete_object("islandora:21")
 
 ### get_datastream
 
-Actually gets the datastream.
+Actually retrieves the datastream.
 
-*streaming=True* returns it in a memory friendly byte iterator
+*streaming=True* returns it in a memory friendly iterator of byte segments
 
 ```python
 raw_mods = client.get_datastream('islandora:21', 'MODS')
@@ -141,7 +145,7 @@ Can create from a file name or from a string. Can set `label=`, `state=`... but
 `checksumType` gets overridden if you have a repository default set.
 
 ```python
-client.create_datastream("islandora:21", "MODS", string=mods_etree.tostring())
+client.create_datastream("islandora:21", "MODS", string=my_mods_etree.tostring())
 
 client.create_datastream("islandora:21", "OBJ", file="/path/to/bigFile.tif", label="bigFile TIFF")
 ```
@@ -173,15 +177,15 @@ for rel in rels:
 ### add_relationship
 
 Note, this is not advanced and does not check 
-to prevent you from duplication of relationships.
+to prevent you from duplicating relationships.
 
 Also, RDF 'string' [does not validate](https://github.com/fcrepo3/fcrepo/blob/9c41b09a21a3a2615791fa4c614095a14512940f/fcrepo-server/src/main/java/org/fcrepo/server/validation/RelsValidator.java#L518)
-so use type='none' if you want a literal string. 
-type="uri" is the default, int/float/dateTime are useable, if not actually useful.  
+so use type='none' (lowercase string *none*) if you want a literal string. 
+int/float/dateTime are useable, if not typically used.  
 
-Basically, if you want an internal URI (rdf:resource is in info:fedora/), don't use a type.  If you are setting a literal, you 
-very likely really want `type="none"`.  Even most of the things that *could* be a RDF typed int/float (like `islandora:isPageNumber`)
-don't bother and just use bare `type="none"` literals. 
+Basically, if you want an internal URI (rdf:resource is in info:fedora/), use `type="uri"` (which is the default).  If you are setting a literal, you 
+probably want `type="none"`.  Even most of the things that *could* be an RDF typed int/float (like `islandora:isPageNumber`)
+don't typically do so in Islandora and just use bare `type="none"` style literals. 
 
 ```python
 client.add_relationship('islandora:10', 
@@ -197,9 +201,9 @@ client.add_relationship('islandora:3', ns="http://customschema.my.edu#",
 
 ### remove_relationship
 
-A bit tricky. PID and Predicate required. You don't need the `ns=` (uri namespace prefix)
-unless you need to disambiguate.  If object is specified and is a literal,
-you need to say `literal=True` (Python bool True).
+Can be tricky. PID and Predicate required. You don't need the `ns=` (uri namespace prefix)
+unless you need to disambiguate between identically-named predicates. If object is specified and is a literal,
+you *need* to say `literal=True` (a Python boolean True).
 
 ```python
 client.remove_relationship('islandora:2', # removes all localCallNumber RELS 
@@ -211,7 +215,7 @@ client.remove_relationship('islandora:3', # removes one specifically
 
 ## Relationship Shortcuts
 
-These convenient functions wrap the basic relationship functions above, but simplify
+These convenient functions wrap the basic relationship functions above, but wrap
 the most common use cases.
 
 ### add_content_model
