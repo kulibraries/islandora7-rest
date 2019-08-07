@@ -30,6 +30,8 @@ from islandora7_rest import config   # sets config.ISLANDORA_REST, etc from .env
 
 ## Query from Solr
 
+Most of our workflows start with a Solr query.
+
 ### solr_generator
 
 solr_generator is an Iterator that yields items from a Solr query 
@@ -57,10 +59,9 @@ result = client.solr_query("*:*", rows=0)
 print(result['response']['numFound'])
 ```
 
-Facets are harder. Because the keyword argument needs an dot in the parameter, and also
-might be called more than once.
+Facets are a bit harder. Because `facet.field` has a dot, and also
+might be called more than once.  This example works:
 
-Example --
 ```python
 arguments = {
     "facet": "true",
@@ -215,7 +216,7 @@ client.remove_relationship('islandora:3', # removes one specifically
 
 ## Relationship Shortcuts
 
-These convenient functions wrap the basic relationship functions above, but wrap
+These convenience functions wrap the basic relationship functions above for
 the most common use cases.
 
 ### add_content_model
