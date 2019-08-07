@@ -77,7 +77,7 @@ for dsid, count in result['facet_counts']['facet_fields']['fedora_datastreams_ms
 
 ### get_object 
 
-Get's object info as a Python dictionary structure.
+Gets object info as a Python dictionary structure.
 
 ```python
 object_info = client.get_object("islandora:21")
