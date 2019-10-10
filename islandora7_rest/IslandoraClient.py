@@ -1,6 +1,6 @@
 # /islandora7_rest/islandora7_rest.py
 # Copyright (c) 2019 The University of Kansas
-# All Rights Reserved.
+# BSD 3-Clause - see LICENSE.txt
 # http://www.ku.edu
 #
 # Islandora REST API at-a-glance
