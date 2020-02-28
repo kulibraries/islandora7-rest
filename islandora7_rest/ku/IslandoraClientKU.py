@@ -18,10 +18,13 @@ class IslandoraClientKU(requests.Session):
         return super(__class__, self).request(method, modified_url,
                                               **kwargs)
 
-    def regen(self, pid, dsid='DC'):
+    # **kwargs here could be DSID-specific flags, like 
+    # language='spa' for OCR, or force_children=True for OCR/PDF
+
+    def regen(self, pid, dsid='DC', **kwargs):
         if not pid:
             raise Exception("Missing PID")
         url = "regen/{}/{}".format(pid, dsid)
-        response = self.put(url)
+        response = self.put(url, params=kwargs)
         response.raise_for_status()
         return response
