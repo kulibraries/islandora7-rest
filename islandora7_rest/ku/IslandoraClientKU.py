@@ -34,7 +34,7 @@ class IslandoraClientKU(requests.Session):
     def premis(self, pid, **kwargs):
         if not pid:
             raise Exception("Missing PID")
-        url = "object/{}/premis"
+        url = "object/{}/premis".format(pid)
         response = self.get(url, params=kwargs)
         response.raise_for_status()
         return response.content
