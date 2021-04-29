@@ -317,7 +317,16 @@ class IslandoraClient(requests.Session):
 
         response = self.post(url, data=metadata_as_kwargs, files=files)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError as json_error:
+            # We find times where we upload a large file and we get a 201 Created but no JSON
+            # Wish I knew where it was, but hack
+            if response.status_code == 201:
+                # Just send back an empty dict if we're okay otherwise
+                return dict()
+            else:
+                raise json_error
 
     def update_datastream(self, pid, dsid, *, file=None, string=None, versionable=None, **metadata_as_kwargs):
         """
