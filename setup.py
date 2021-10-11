@@ -5,7 +5,7 @@ with open("docs/index.md", "r") as fh:
 
 setuptools.setup(
     name="islandora7-rest",
-    version="3.0.4",
+    version="3.0.5",
     author="Jeremy Keeler <jkeeler@ku.edu>, Tom Shorock <shorock@ku.edu>",
     description="Python client for discoverygarden/islandora_rest (for Islandora 7)",
     long_description=long_description,

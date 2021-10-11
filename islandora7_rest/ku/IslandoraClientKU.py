@@ -38,3 +38,11 @@ class IslandoraClientKU(requests.Session):
         response = self.get(url, params=kwargs)
         response.raise_for_status()
         return response.content
+
+    def reindex(self, pid, **kwargs):
+        if not pid:
+            raise Exception("Missing PID")
+        url = "reindex/{}".format(pid)
+        response = self.get(url, params=kwargs)
+        response.raise_for_status()
+        return response
